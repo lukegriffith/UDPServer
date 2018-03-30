@@ -1,29 +1,44 @@
-import javax.xml.crypto.Data;
 import java.net.*;
-import java.io.*;
+import java.util.*;
 
 public class Server {
 
-    public static void main(String argv[])throws Exception {
+
+    private static HashMap<String, ArrayList<String>> connHistory;
+    private static int port;
+    private static int dataSize;
+
+    static {
+        connHistory = new HashMap<String, ArrayList<String>>();
+        port = 9876;
+        dataSize = 1024;
+    }
+
+
+    public static void main(String args[])throws Exception {
 
 
         String capitalizedSentence;
-        DatagramSocket serverSocket = new DatagramSocket(9876);
-        byte[] recieveData = new byte[1024];
-        byte[] sendData = new byte[1024];
+        DatagramSocket serverSocket = new DatagramSocket(port);
+
 
         while(true) {
 
-            DatagramPacket recievePacket = new DatagramPacket(recieveData, recieveData.length);
+            byte[] sendData = new byte[dataSize];
+            byte[] receivedData = new byte[dataSize];
+
+            DatagramPacket recievePacket = new DatagramPacket(receivedData, receivedData.length);
             serverSocket.receive(recievePacket);
 
-            String sentence = new String( recievePacket.getData());
-            System.out.println("RECIEVED: +" + sentence);
+            String sentence = new String( recievePacket.getData()).trim();
+            System.out.println("RECEIVED: '" + sentence + "' from " + recievePacket.getAddress().toString());
 
             InetAddress IPAddress = recievePacket.getAddress();
             int port = recievePacket.getPort();
             capitalizedSentence = sentence.toUpperCase();
             sendData = capitalizedSentence.getBytes();
+
+            System.out.println("SENDING: '" + capitalizedSentence + "' to " + recievePacket.getAddress().toString());
 
             DatagramPacket sendPacket =
                     new DatagramPacket(sendData, sendData.length, IPAddress, port);
