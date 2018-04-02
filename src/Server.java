@@ -24,21 +24,6 @@ public class Server {
 
             System.out.println("RECEIVED: '" + message.getMessage() + "' from " + message.getAddress().toString());
 
-            /*
-            String sentence = message.getMessage();
-            capitalizedSentence = sentence.toUpperCase();
-            byte[] sendData = capitalizedSentence.getBytes();
-
-
-
-
-
-            DatagramPacket sendPacket =
-                    new DatagramPacket(sendData, sendData.length, message.getAddress(), port);
-
-            serverSocket.send(capitalizedSentence, message.getAddress(), message.getPort());
-            */
-
             ArrayList<String> history = connectionMap.get(message.getAddress().toString());
 
             if (history == null) {
@@ -62,7 +47,5 @@ public class Server {
 
         }
     }
-
-
 }
 
