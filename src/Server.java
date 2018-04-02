@@ -4,46 +4,65 @@ import java.util.*;
 public class Server {
 
 
-    private static HashMap<String, ArrayList<String>> connHistory;
+    private static HashMap<String, ArrayList<String>> connectionMap;
     private static int port;
-    private static int dataSize;
 
     static {
-        connHistory = new HashMap<String, ArrayList<String>>();
+        connectionMap = new HashMap<String, ArrayList<String>>();
         port = 9876;
-        dataSize = 1024;
     }
 
 
     public static void main(String args[])throws Exception {
 
-
         String capitalizedSentence;
-        DatagramSocket serverSocket = new DatagramSocket(port);
-
+        UDPSocket serverSocket = new UDPSocket(port);
 
         while(true) {
 
-            byte[] sendData = new byte[dataSize];
-            byte[] receivedData = new byte[dataSize];
+            UDPMessage message = serverSocket.receive();
 
-            DatagramPacket recievePacket = new DatagramPacket(receivedData, receivedData.length);
-            serverSocket.receive(recievePacket);
+            System.out.println("RECEIVED: '" + message.getMessage() + "' from " + message.getAddress().toString());
 
-            String sentence = new String( recievePacket.getData()).trim();
-            System.out.println("RECEIVED: '" + sentence + "' from " + recievePacket.getAddress().toString());
-
-            InetAddress IPAddress = recievePacket.getAddress();
-            int port = recievePacket.getPort();
+            /*
+            String sentence = message.getMessage();
             capitalizedSentence = sentence.toUpperCase();
-            sendData = capitalizedSentence.getBytes();
+            byte[] sendData = capitalizedSentence.getBytes();
 
-            System.out.println("SENDING: '" + capitalizedSentence + "' to " + recievePacket.getAddress().toString());
+
+
+
 
             DatagramPacket sendPacket =
-                    new DatagramPacket(sendData, sendData.length, IPAddress, port);
-            serverSocket.send(sendPacket);
+                    new DatagramPacket(sendData, sendData.length, message.getAddress(), port);
+
+            serverSocket.send(capitalizedSentence, message.getAddress(), message.getPort());
+            */
+
+            ArrayList<String> history = connectionMap.get(message.getAddress().toString());
+
+            if (history == null) {
+                connectionMap.put(message.getAddress().toString(), new ArrayList<String>());
+                history = connectionMap.get(message.getAddress().toString());
+            }
+
+            history.add(message.getMessage());
+
+            if (history.size() >= 3) {
+                String concatString = String.format("%s#%s#%s", history.get(0), history.get(1), history.get(2));
+                String stringLength = Integer.toString(concatString.length() - 3);
+
+                System.out.println("SENDING: concatString '" + concatString + "' to " + message.getAddress().toString());
+                serverSocket.send(concatString, message.getAddress(), message.getPort());
+                System.out.println("SENDING: stringLength '" + stringLength + "' to " + message.getAddress().toString());
+                serverSocket.send(stringLength, message.getAddress(), message.getPort());
+
+                connectionMap.remove(message.getAddress().toString());
+            }
 
         }
     }
+
+
 }
+

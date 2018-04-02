@@ -14,12 +14,10 @@ public class UDPSocket {
         this.socket = new DatagramSocket();
     }
 
-    public void send(String message, String address, int port) throws Exception {
+    public void send(String message, InetAddress address, int port) throws Exception {
 
         byte[] buffer = message.getBytes();
-        InetAddress targetAddress = InetAddress.getByName(address);
-
-        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, targetAddress, port);
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, port);
         socket.send(packet);
     }
 
@@ -29,13 +27,12 @@ public class UDPSocket {
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
         socket.receive(packet);
 
-        UDPMessage message = new UDPMessage();
+        return new UDPMessage(
+                new String(packet.getData(), 0, packet.getLength()),
+                packet.getAddress(),
+                packet.getPort()
+        );
 
-        message.message = new String(packet.getData(), 0, packet.getLength());
-        message.address = packet.getAddress();
-        message.port = packet.getPort();
-
-        return message;
     }
 
 }

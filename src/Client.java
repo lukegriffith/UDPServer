@@ -6,37 +6,23 @@ public class Client {
 
     public static void main(String arg[]) throws Exception {
 
-        byte[] buffer = new byte[1024];
+        InetAddress target = InetAddress.getByName("localhost");
 
-        DatagramSocket socket = new DatagramSocket();
-        DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-
-
-        Scanner userInput = new Scanner(System.in);
-
-        String msg = userInput.nextLine();
-
-        buffer = msg.getBytes();
-
-        InetAddress hostAddress = InetAddress.getByName("localhost");
-
-        DatagramPacket out = new DatagramPacket(buffer, buffer.length, hostAddress, 9876);
+        UDPSocket socket = new UDPSocket();
 
 
+        for (int i = 0; i < 3; i++) {
+            Scanner userInput = new Scanner(System.in);
+            String msg = userInput.nextLine();
+            socket.send(msg, target, 9876);
+        }
 
-        socket.send(out);
-
-        socket.receive(packet);
-
-        String s = new String(packet.getData(), 0, packet.getLength());
-
-        System.out.println(s);
-
-
+        UDPMessage reconstructedString = socket.receive();
+        UDPMessage lengthOfString = socket.receive();
 
 
+        System.out.println(reconstructedString.getMessage() + " " + lengthOfString.getMessage());
 
     }
-
 
 }
